@@ -10,10 +10,22 @@
     $pass = "chefchef";
     $bdd = new PDO('mysql:host=localhost:3306;dbname=test', $user, $pass);
 
-    if(isset($_POST['delete'])) {
+    if(isset($_POST['delete_livre'])) {
         $sql_delete = "DELETE FROM livres WHERE id=:id";
         $stmt = $bdd->prepare($sql_delete);
-        $stmt->execute(['id' => $_POST["delete"]]);
+        $stmt->execute(['id' => $_POST["delete_livre"]]);
+    }
+
+    if(isset($_POST['delete_auteur'])) {
+        $sql_delete = "DELETE FROM auteurs WHERE id=:id";
+        $stmt = $bdd->prepare($sql_delete);
+        $stmt->execute(['id' => $_POST["delete_auteur"]]);
+    }
+
+    if(isset($_POST['delete_genre'])) {
+        $sql_delete = "DELETE FROM genres WHERE id=:id";
+        $stmt = $bdd->prepare($sql_delete);
+        $stmt->execute(['id' => $_POST["delete_genre"]]);
     }
 
     if( test($_POST) ) {
@@ -26,14 +38,26 @@
 
     if( test($_POST) ) {
         if( test($_POST["nom"]) ) {
-            $sql_insert_auteur = "INSERT INTO auteurs VALUES (NULL, :nom, 'Charles')";
+            $sql_insert_auteur = "INSERT INTO auteurs VALUES (NULL, :nom, :prenom)";
             $stmt_auteur = $bdd->prepare($sql_insert_auteur);
-            $stmt_auteur->execute(['nom' => $_POST["nom"]]);
+            $stmt_auteur->execute(['nom' => $_POST["nom"], 'prenom' => $_POST["prenom"]]);
         }
     }
 
-    $sql = "SELECT * FROM livres INNER JOIN auteurs ON livres.auteur_id = auteurs.id_auteur INNER JOIN genres ON livres.genre_id = genres.id_genre;";
-    $livres = $bdd->query($sql)->fetchAll();
+    if( test($_POST) ) {
+        if( test($_POST["genre"]) ) {
+            $sql_insert_genre = "INSERT INTO genres VALUES (NULL, :genre)";
+            $stmt_genre = $bdd->prepare($sql_insert_genre);
+            $stmt_genre->execute(['genre' => $_POST["genre"]]);
+        }
+    }
+
+    $sql_livres = "SELECT livres.id, livres.titre, auteurs.nom, auteurs.prenom, genres.genre FROM livres INNER JOIN auteurs ON livres.auteur_id = auteurs.id INNER JOIN genres ON livres.genre_id = genres.id;";
+    $livres = $bdd->query($sql_livres)->fetchAll();
+    $sql_auteurs = "SELECT id, nom, prenom FROM auteurs;";
+    $auteurs = $bdd->query($sql_auteurs)->fetchAll();
+    $sql_genres = "SELECT id, genre FROM genres;";
+    $genres = $bdd->query($sql_genres)->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -66,7 +90,7 @@
                     <td>
                         <form action="" method="POST">
                             <button type="submit" name="update">Modifier</button>
-                            <button type="submit" name="delete" value=<?php echo($livre["id"]); ?>>Supprimer</button>
+                            <button type="submit" name="delete_livre" value=<?php echo($livre["id"]); ?>>Supprimer</button>
                         </form>
                     </td>
                 </tr>
@@ -83,7 +107,7 @@
         <input type="submit" value="Envoyer !">
     </form>
 
-    <h2>Auteur</h2>
+    <h2>Auteurs</h2>
 
     <table border="1">
         <thead>
@@ -97,11 +121,11 @@
             <?php foreach($auteurs as $auteur): ?>
                 <tr>
                     <td><?php echo($auteur["nom"]); ?></td>
-                    <td>Charles</td>
+                    <td><?php echo($auteur["prenom"]); ?></td>
                     <td>
                         <form action="" method="POST">
                             <button type="submit" name="update">Modifier</button>
-                            <button type="submit" name="delete" value=<?php echo($auteur["id_auteur"]); ?>>Supprimer</button>
+                            <button type="submit" name="delete_auteur" value=<?php echo($auteur["id"]); ?>>Supprimer</button>
                         </form>
                     </td>
                 </tr>
@@ -109,9 +133,42 @@
         </tbody>
     </table>
 
+    <br>
+
     <form action="" method="POST">
         <input type="text" name="nom" placeholder="Nom">
         <input type="text" name="prenom" placeholder="Prenom">
+        <input type="submit" value="Envoyer !">
+    </form>
+
+    <h2>Genres</h2>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Genre</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach($genres as $genre): ?>
+                <tr>
+                    <td><?php echo($genre["genre"]); ?></td>
+                    <td>
+                        <form action="" method="POST">
+                            <button type="submit" name="update">Modifier</button>
+                            <button type="submit" name="delete_genre" value=<?php echo($genre["id"]); ?>>Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <br>
+
+    <form action="" method="POST">
+        <input type="text" name="genre" placeholder="Genre">
         <input type="submit" value="Envoyer !">
     </form>
 </body>
