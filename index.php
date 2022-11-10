@@ -33,9 +33,9 @@
     // ------------------------------------------------------
 
     if(isset($_POST['btn_livre'])) {
-        $sql_update_livre = "UPDATE livres SET titre=:titre WHERE id=:id";
+        $sql_update_livre = "UPDATE livres SET titre=:titre, auteur_id=:auteur_id, genre_id=:genre_id WHERE id=:id";
         $stmt = $bdd->prepare($sql_update_livre);
-        $stmt->execute(['titre' => $_POST["txt_livre"], 'id' => $_POST["id_livre"]]);
+        $stmt->execute(['titre' => $_POST["txt_livre"], 'id' => $_POST["id_livre"], 'auteur_id' => $_POST["auteur_select"], 'genre_id' => $_POST["genre_select"]]);
     }
 
     if(isset($_POST['btn_auteur'])) {
@@ -79,7 +79,8 @@
 
     // ------------------------------------------------------
 
-    $sql_livres = "SELECT livres.id, livres.titre, auteurs.nom, auteurs.prenom, genres.genre FROM livres INNER JOIN auteurs ON livres.auteur_id = auteurs.id INNER JOIN genres ON livres.genre_id = genres.id;";
+    $sql_livres = "SELECT livres.id, livres.titre, auteurs.nom, auteurs.prenom, genres.genre 
+    FROM livres INNER JOIN auteurs ON livres.auteur_id = auteurs.id INNER JOIN genres ON livres.genre_id = genres.id;";
     $livres = $bdd->query($sql_livres)->fetchAll();
     $sql_auteurs = "SELECT id, nom, prenom FROM auteurs;";
     $auteurs = $bdd->query($sql_auteurs)->fetchAll();
